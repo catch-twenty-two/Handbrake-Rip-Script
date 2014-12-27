@@ -1,10 +1,23 @@
 SEASON=1
 EPISODE=1
+EXTRACTION_PATH="/Volumes/video/TV show/"
 
 while [ true ]; do
 	
-	echo "Please insert dvd and press enter"
-	read
+	echo "Please insert dvd and press enter press x to exit"
+	read ANSWER
+	
+	if [ $ANSWER = "x" ]; then
+		exit 1	
+	fi
+		
+	file /dev/disk1 > /dev/null
+	
+	while [ $? = "1" ]; do
+		echo "Searching for DVD..."
+		sleep 1
+		file /dev/disk1	> /dev/null		
+	done
 	
 	echo "Reading Titles"
 	
@@ -18,12 +31,22 @@ while [ true ]; do
 	echo "Title name (return for) $TITLE_NAME"
 	
 	read ANSWER
-
+	
 	if [ ! -z "$ANSWER" ]
 	then
-#		ANSWER=$( echo $ANSWER | sed 's/\ /\\ /g'  )
 		TITLE_NAME=$ANSWER
 	fi
+	
+	if [ -d "$EXTRACTION_PATH$TITLE_NAME" ]
+	then
+		echo "Directory for $TITLE_NAME not found, create?"
+		read ANSWER
+		
+		if [ $ANSWER = "y" ]; then
+			mkdir -p "$EXTRACTION_PATH$TITLE_NAME"	
+		fi
+		
+	done
 	
 	echo "Season (return for) $SEASON"	
 	read ANSWER
@@ -45,15 +68,18 @@ while [ true ]; do
 	
 	for i in `seq $TITLE_COUNT`
 	do	
-		FULL_TITLE=$( printf "$TITLE_NAME Season $SEASON S-%02d E-%02d.mp4" $SEASON $EPISODE )
+		# Ex. King Of The Hill Season 3 S03-E06
+		FULL_TITLE=$( printf "$TITLE_NAME Season $SEASON S%02d-E%02d.mp4" $SEASON $EPISODE )
+		
 		echo "Extracting $FULL_TITLE"
-		HandBrakeCLI -i /dev/disk1 -t $i --preset Normal -o "$FULL_TITLE"
+		
+		HandBrakeCLI -i /dev/disk1 -t $i --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
 		EPISODE=`expr $EPISODE + 1`		
 	done
 	
-	EPISODE=`expr $$TITLE_COUNT + 1`	
+	EPISODE=`expr $EPISODE + 1`	
 	
-	echo "Done!"
+	echo "Disc Done!"
 	
 	diskutil eject /dev/disk1
 	

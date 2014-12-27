@@ -21,7 +21,7 @@ while [ true ]; do
 	
 	echo "Reading Titles"
 	
-	HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1200 2> hb.out
+	HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1140 2> hb.out
 
 	TITLE_COUNT=$( cat hb.out | grep -cw "+ title" )
 
@@ -73,7 +73,7 @@ while [ true ]; do
 		
 		echo "Extracting $FULL_TITLE"
 		
-		HandBrakeCLI -i /dev/disk1 -t $i --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
+		HandBrakeCLI -i /dev/disk1 -t $i --min-duration 1140 --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
 		EPISODE=`expr $EPISODE + 1`		
 	done
 	

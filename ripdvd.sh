@@ -4,24 +4,24 @@ EXTRACTION_PATH="/Volumes/video/TV show/"
 
 while [ true ]; do
 	
-	echo "Please insert dvd and press enter press x to exit"
+	echo "Please insert dvd and press return or type x to exit"
 	read ANSWER
 	
-	if [ $ANSWER = "x" ]; then
-		exit 1	
+	if [ ! -z "$ANSWER" ] && [ "$ANSWER" = "x" ]; then
+		exit 0
 	fi
 		
-	file /dev/disk1 > /dev/null
+	ls /dev/disk1 2>1 > /dev/null
 	
 	while [ $? = "1" ]; do
 		echo "Searching for DVD..."
 		sleep 1
-		file /dev/disk1	> /dev/null		
+		ls /dev/disk1 2>1 > /dev/null		
 	done
 	
 	echo "Reading Titles"
 	
-	HandBrakeCLI -i /dev/disk1 --title 0 2> hb.out
+	HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1200 2> hb.out
 
 	TITLE_COUNT=$( cat hb.out | grep -cw "+ title" )
 
@@ -37,16 +37,16 @@ while [ true ]; do
 		TITLE_NAME=$ANSWER
 	fi
 	
-	if [ -d "$EXTRACTION_PATH$TITLE_NAME" ]
+	if [ ! -d "$EXTRACTION_PATH$TITLE_NAME" ]
 	then
-		echo "Directory for $TITLE_NAME not found, create?"
+		echo "Directory for $TITLE_NAME not found, create? (y/n)"
 		read ANSWER
 		
-		if [ $ANSWER = "y" ]; then
+		if [ ! -z "$ANSWER" ] && [ $ANSWER = "y" ]; then
 			mkdir -p "$EXTRACTION_PATH$TITLE_NAME"	
 		fi
 		
-	done
+	fi
 	
 	echo "Season (return for) $SEASON"	
 	read ANSWER

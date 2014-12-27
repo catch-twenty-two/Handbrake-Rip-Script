@@ -77,8 +77,6 @@ while [ true ]; do
 		EPISODE=`expr $EPISODE + 1`		
 	done
 	
-	EPISODE=`expr $EPISODE + 1`	
-	
 	echo "Disc Done!"
 	
 	diskutil eject /dev/disk1

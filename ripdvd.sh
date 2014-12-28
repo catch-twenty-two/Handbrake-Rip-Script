@@ -3,6 +3,7 @@
 SEASON=1
 EPISODE=1
 EXTRACTION_PATH="/Volumes/video/TV show/"
+FULL_TITLE="Unknown"
 
 extract()
 {
@@ -26,7 +27,7 @@ extract()
 
 while [ true ]; do
 	
-	echo "Please insert dvd and press return to enter parameters or type x to exit script or s to skip to immediate extraction"
+	echo "Please insert dvd and press p to enter parameters, x to exit or s to skip to immediate extraction using $FULL_TITLE"
 	read -n 1 ANSWER
 	
 	if [ ! -z "$ANSWER" ] && [ "$ANSWER" = "x" ]; then
@@ -56,7 +57,7 @@ while [ true ]; do
 		continue
 	fi
 	
-	echo "Title name (return for) $TITLE_NAME"
+	echo "Title name (return for $TITLE_NAME)"
 	
 	read ANSWER
 	
@@ -79,7 +80,7 @@ while [ true ]; do
 				
 	fi
 	
-	echo "Season (return for) $SEASON"	
+	echo "Season (return for $SEASON)"	
 	read ANSWER
 	
 	if [ ! -z "$ANSWER" ]	
@@ -87,7 +88,7 @@ while [ true ]; do
 		SEASON=$ANSWER
 	fi
 
-	echo "Episode offset (return for) $EPISODE"
+	echo "Episode offset (return for $EPISODE)"
 	read ANSWER
 
 	if [ ! -z "$ANSWER" ]	

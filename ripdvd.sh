@@ -16,6 +16,12 @@ extract()
 		
 		echo "Extracting $FULL_TITLE"
 		
+		if [ -f "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE" ]; then
+			echo "File already exists skipping this title"
+			EPISODE=`expr $EPISODE + 1`	
+			continue
+		fi
+		
 		HandBrakeCLI -i /dev/disk1 -t $i --min-duration 1140 --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
 		EPISODE=`expr $EPISODE + 1`		
 	done
@@ -41,16 +47,22 @@ while [ true ]; do
 		sleep 1
 		ls /dev/disk1 2>1 > /dev/null		
 	done
-	
-	echo "Reading Titles"
-	
-	HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1140 2> hb.out
 
-	TITLE_COUNT=$( cat hb.out | grep -cw "+ title" )
+	if [ ! -z "$ANSWER" ] && [ "$ANSWER" = "p" ]; then
 
-	rm hb.out
+            echo "Enter title count"	    
+	    read TITLE_COUNT
+            continue
 
-	echo "Found $TITLE_COUNT titles"
+	    else
+
+	    echo "Reading Titles"	    
+            HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1140 2> hb.out	    
+            TITLE_COUNT=$( cat hb.out | grep -cw "+ title" )	
+            rm hb.out	    
+            echo "Found $TITLE_COUNT titles"
+
+        fi
 	
 	if [ ! -z "$ANSWER" ] && [ "$ANSWER" = "s" ]; then
 		extract

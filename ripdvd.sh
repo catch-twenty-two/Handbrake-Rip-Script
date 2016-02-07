@@ -2,7 +2,9 @@
 
 SEASON=1
 EPISODE=1
-EXTRACTION_PATH="/Volumes/video/TV show/"
+EXTRACTION_PATH="/tmp/"
+COPY_PATH="/run/user/1000/gvfs/afp-volume:host=192.168.2.151,user=jimmy,volume=video/TV show/"
+#"/Volumes/video/TV show/"
 FULL_TITLE="Unknown"
 
 extract()
@@ -22,13 +24,35 @@ extract()
 			continue
 		fi
 		
-		HandBrakeCLI -i /dev/disk1 -t $i --min-duration 1140 --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
-		EPISODE=`expr $EPISODE + 1`		
+		HandBrakeCLI -i /dev/sr0 -t $i --min-duration 1140 --preset Normal -o "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
+
+		INCREMENT=1
+
+		find "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE" -name "$FULL_TITLE" -size -100M | grep "$FULL_TITLE"
+		
+		if [ "$?" = "0" ]; then 
+			rm "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
+			INCREMENT=0 
+		fi
+
+		find "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE" -name "$FULL_TITLE" -size +400M | grep "$FULL_TITLE"
+
+		if [ "$?" = "0" ]; then 
+			rm "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE"
+			INCREMENT=0		
+		fi
+		
+		if [ $INCREMENT = "1" ]; then 
+			EPISODE=`expr $EPISODE + $INCREMENT`
+			mkdir -p "$COPY_PATH$TITLE_NAME"
+			cp "$EXTRACTION_PATH$TITLE_NAME/$FULL_TITLE" "$COPY_PATH$TITLE_NAME" &
+		fi
+	
 	done
 	
 	echo "Disc Done!"
 	
-	diskutil eject /dev/disk1
+	eject /dev/sr0
 }
 
 while [ true ]; do
@@ -40,24 +64,20 @@ while [ true ]; do
 		exit 0
 	fi
 		
-	ls /dev/disk1 2>1 > /dev/null
+	mount | grep /dev/sr0 2>1 > /dev/null
 	
 	while [ $? = "1" ]; do
 		echo "Searching for DVD..."
 		sleep 1
-		ls /dev/disk1 2>1 > /dev/null		
+		mount | grep /dev/sr0 2>1 > /dev/null		
 	done
+
+	sleep 4
 
 	if [ ! -z "$ANSWER" ] && [ "$ANSWER" = "p" ]; then
 
-            echo "Enter title count"	    
-	    read TITLE_COUNT
-            continue
-
-	    else
-
 	    echo "Reading Titles"	    
-            HandBrakeCLI -i /dev/disk1 --title 0 --min-duration 1140 2> hb.out	    
+            HandBrakeCLI -i /dev/sr0 --title 0 --min-duration 1140 2> hb.out	    
             TITLE_COUNT=$( cat hb.out | grep -cw "+ title" )	
             rm hb.out	    
             echo "Found $TITLE_COUNT titles"
